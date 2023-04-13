@@ -1,3 +1,6 @@
+
+ 
+
 {
   "compilerOptions": {
     "jsx": "react-jsx",
@@ -13,7 +16,7 @@
     "module": "ES2022",
     "moduleResolution": "node",
     "outDir":"./dist",
-    "types": ["node", "vite/client", "vite-plugin-pwa/client"],
+    "types": ["node", "vite/client"],
     "lib": ["ES2019", "DOM", "DOM.Iterable"]
   },
   "exclude": [
