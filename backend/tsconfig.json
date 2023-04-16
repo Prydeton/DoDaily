@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "moduleResolution": "node",
+    "strict": true,
+    "paths": {
+      "/*": ["./*"]
+    },
+    "baseUrl": "./",
+    "noEmit": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true
+  },
+  "exclude": [
+    "**/node_modules/*",
+    "**/dist/*",
+    "**/.parcel-cache/*",
+    "**/.git/*",
+  ],
+}

@@ -1,0 +1,35 @@
+{
+  "name": "do-daily-backend",
+  "private": true,
+  "version": "0.0.0",
+  "main": "index.ts",
+  "author": "Maxwell Reid",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsup index.ts --env.NODE_ENV production",
+    "dev": "tsup index.ts --silent --env.NODE_ENV development --watch --onSuccess \"yarn start\"" ,
+    "start": "node ./dist/index.js"
+  },
+  "tsup": {
+    "target": "node18"
+  },
+  "dependencies": {
+    "@prisma/client": "^4.12.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "tsup": "^6.7.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.17",
+    "@types/node": "^18.15.11",
+    "@typescript-eslint/eslint-plugin": "^5.58.0",
+    "@typescript-eslint/parser": "^5.52.0",
+    "eslint": "^8.38.0",
+    "eslint-plugin-react": "^7.32.2",
+    "eslint-plugin-simple-import-sort": "^10.0.0",
+    "prisma": "^4.12.0",
+    "supabase": "^1.50.4",
+    "typescript": "^5.0.4"
+  }
+}
