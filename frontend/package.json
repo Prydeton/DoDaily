@@ -8,6 +8,10 @@
     "build": "tsc && vite build"
   },
   "dependencies": {
+    "@tanstack/react-query": "^4.29.3",
+    "@trpc/client": "^10.20.0",
+    "@trpc/react-query": "^10.20.0",
+    "@trpc/server": "^10.20.0",
     "goober": "^2.1.12",
     "lucide-react": "^0.144.0",
     "react": "^18.2.0",

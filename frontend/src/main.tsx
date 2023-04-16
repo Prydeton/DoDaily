@@ -5,6 +5,7 @@ import { shouldForwardProp } from 'goober/should-forward-prop'
 
 import App from './App'
 
+// Configure styled components prop forwarding
 setup(
   createElement,
   undefined, undefined,

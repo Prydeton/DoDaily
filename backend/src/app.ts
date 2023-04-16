@@ -1,16 +1,24 @@
-import express from 'express'
+import * as trpcExpress from '@trpc/server/adapters/express'
+import cors from 'cors'
+import express, { Application } from 'express'
+
+import { appRouter } from './router'
+import { createContext } from './trpc'
 
 const startApp = async ({ port }: { port: number }) => {
-  const app = express()
+  const app: Application = express()
 
-  // Generic middleware
-
-  app.use(express.urlencoded({ extended: true }))
   app.use(express.json())
+  app.use(cors())
 
-  // Routes
-  app.post('/health-check', () => { console.log('Alive')})
-  return app.listen(port, () => console.log('listening'))
+  app.use(
+    '/trpc',
+    trpcExpress.createExpressMiddleware({
+      router: appRouter,
+      createContext,
+    }))
+
+  return app.listen(port)
 }
 
 export default startApp
