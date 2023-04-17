@@ -2,9 +2,9 @@ import { useState } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { httpBatchLink } from '@trpc/client'
 
-import { Container } from './App.styles'
+import { PageContainer } from './App.styles'
 import { Header } from './components'
-import { Calendar } from './pages'
+import { Calendar, Settings } from './pages'
 import { trpc } from './utils/trpc'
 
 const App: React.FC = () => {
@@ -20,13 +20,16 @@ const App: React.FC = () => {
     }),
   )
 
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+
   return (
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
       <QueryClientProvider client={queryClient}>
-        <Container>
-          <Header />
+        <Header isSettingsOpen={isSettingsOpen} setIsSettingsOpen={setIsSettingsOpen} />
+        <PageContainer>
           <Calendar />
-        </Container>
+          <Settings isOpen={isSettingsOpen} />
+        </PageContainer>
       </QueryClientProvider>
     </trpc.Provider>
   )

@@ -1,7 +1,10 @@
 import { styled } from 'goober'
 
 export const PageContainer = styled('div')`
-
+  background: var(--background-light);
+  position: absolute;
+  width: 100%;
+  height: 100%;
 `
 
 export const ControlsContainer = styled('div')`
