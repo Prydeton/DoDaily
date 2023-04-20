@@ -1,2 +1,6 @@
 export { default as Header } from './Header/Header'
 export { default as DayBulb } from './DayBulb/DayBulb'
+export { default as TaskManagementList } from './TaskManagementList/TaskManagementList'
+export { default as TextInput } from './TextInput/TextInput'
+export { default as DragHandle } from './DragHandle/DragHandle'
+export { default as Button } from './Button/Button'

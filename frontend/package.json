@@ -8,6 +8,8 @@
     "build": "tsc && vite build"
   },
   "dependencies": {
+    "@dnd-kit/core": "^6.0.8",
+    "@dnd-kit/sortable": "^7.0.2",
     "@tanstack/react-query": "^4.29.3",
     "@trpc/client": "^10.20.0",
     "@trpc/react-query": "^10.20.0",
@@ -15,7 +17,8 @@
     "goober": "^2.1.12",
     "lucide-react": "^0.144.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "react-hook-form": "^7.43.9"
   },
   "devDependencies": {
     "@types/node": "^18.15.11",

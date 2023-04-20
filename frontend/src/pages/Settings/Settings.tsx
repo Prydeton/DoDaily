@@ -1,3 +1,5 @@
+import { TaskManagementList } from '/src/components'
+
 import { Container } from './Settings.styles'
 
 interface SettingsProps {
@@ -7,7 +9,7 @@ interface SettingsProps {
 const Settings: React.FC<SettingsProps> = ({ isOpen }: SettingsProps) => {
   return (
     <Container className={isOpen ? 'open' : 'close'}>
-
+      <TaskManagementList />
     </Container>
   )
 }

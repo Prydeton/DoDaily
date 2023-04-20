@@ -16,10 +16,7 @@ const Header: React.FC<HeaderProps> = ({ isSettingsOpen, setIsSettingsOpen }: He
     <Container>
       <NavActionItem onClick={() => console.log('STATS')}><LineChart /></NavActionItem>
       <NavTitleItem>Do Daily</NavTitleItem>
-      <NavActionItem onClick={() => {
-        setIsSettingsOpen(!isSettingsOpen)
-        console.log('Opening settigns')
-      }}><Menu /></NavActionItem>
+      <NavActionItem onClick={() => setIsSettingsOpen(!isSettingsOpen)}><Menu /></NavActionItem>
     </Container>
   )
 }
