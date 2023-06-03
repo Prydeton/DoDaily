@@ -1,6 +1,6 @@
 import { LineChart, Menu } from 'lucide-react'
 
-import { trpc } from '/src/utils/trpc'
+import { trpc } from '/src/libs'
 
 import { Container, NavActionItem, NavTitleItem } from './Header.styles'
 
@@ -10,11 +10,11 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ isSettingsOpen, setIsSettingsOpen }: HeaderProps ) => {
-  const taskQuery = trpc.getAllUserTasks.useQuery()
+
 
   return (
     <Container>
-      <NavActionItem onClick={() => console.log('STATS')}><LineChart /></NavActionItem>
+      <NavActionItem onClick={() => console.log('test')}><LineChart /></NavActionItem>
       <NavTitleItem>Do Daily</NavTitleItem>
       <NavActionItem onClick={() => setIsSettingsOpen(!isSettingsOpen)}><Menu /></NavActionItem>
     </Container>

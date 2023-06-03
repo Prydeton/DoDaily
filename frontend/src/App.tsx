@@ -4,19 +4,35 @@ import { httpBatchLink } from '@trpc/client'
 
 import { PageContainer } from './App.styles'
 import { Header } from './components'
-import { Calendar, Settings } from './pages'
-import { trpc } from './utils/trpc'
+import { trpc } from './libs'
+import { Auth, Calendar, Settings } from './pages'
+import { useAuthStore } from './Stores'
 
 const App: React.FC = () => {
-  const [queryClient] = useState(() => new QueryClient())
+  const {
+    session,
+    getAuthHeader
+  } = useAuthStore()
+
+  const [queryClient] = useState(() => new QueryClient({
+    defaultOptions: {
+      queries: {
+        refetchOnWindowFocus: false
+      }
+    }}))
   const [trpcClient] = useState(() =>
     trpc.createClient({
       links: [
         httpBatchLink({
           url: 'http://localhost:3001/trpc',
-          // TODO Auth headers
+          headers() {
+            return {
+              Authorization: getAuthHeader(),
+            }
+          }
         }),
       ],
+
     }),
   )
 
@@ -25,11 +41,15 @@ const App: React.FC = () => {
   return (
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
       <QueryClientProvider client={queryClient}>
-        <Header isSettingsOpen={isSettingsOpen} setIsSettingsOpen={setIsSettingsOpen} />
-        <PageContainer>
-          <Calendar />
-          <Settings isOpen={isSettingsOpen} />
-        </PageContainer>
+        {session ? (<>
+          <Header isSettingsOpen={isSettingsOpen} setIsSettingsOpen={setIsSettingsOpen} />
+          <PageContainer>
+            <Calendar />
+            <Settings isOpen={isSettingsOpen} />
+          </PageContainer>
+        </>) : (
+          <Auth />
+        )}
       </QueryClientProvider>
     </trpc.Provider>
   )

@@ -1,13 +1,15 @@
-import { Fragment, useMemo, useState } from 'react'
+import { Fragment, useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { Controller, useForm } from 'react-hook-form'
+import { Controller, SubmitHandler, useForm } from 'react-hook-form'
 import { closestCenter, DndContext, DragOverlay, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
 import { arrayMove, SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
+import { getQueryKey } from '@trpc/react-query'
+import dayjs from 'dayjs'
 import { Trash2 } from 'lucide-react'
 
-import { Button, DragHandle } from '/src/components/'
-import { trpc } from '/src/utils/trpc'
+import { Button, DragHandle, Spinner } from '/src/components/'
+import { trpc } from '/src/libs'
 
 import { ButtonContainer, Container, List, Row } from './TaskManagementList.styles'
 import TextInput from '../TextInput/TextInput'
@@ -15,12 +17,12 @@ import TextInput from '../TextInput/TextInput'
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface InputItemProps {
   id: string
-  value?: string
+  name?: string
 
   style?: React.CSSProperties
   active?: boolean
   sortableProps?: ReturnType<typeof useSortable>
-  onChange?: (value: string) => void
+  onChange?: (name: string) => void
 
   onRemove?: () => void
 }
@@ -31,10 +33,9 @@ export const InputItem = ({
   active,
   sortableProps,
   style,
-  value,
+  name,
 }: InputItemProps) => {
   const { attributes, listeners, setNodeRef, transform, transition } = sortableProps ?? {}
-
   return <Row
     ref={setNodeRef}
     style={{
@@ -48,7 +49,7 @@ export const InputItem = ({
     <DragHandle {...attributes} {...listeners} active={active} />
 
     <TextInput
-      value={value}
+      value={name}
       onChange={e => onChange?.(e.target.value)}
     />
 
@@ -67,7 +68,7 @@ const Sortable = ({ ...props }: InputItemProps) => {
 const TaskManagementList: React.FC = () => {
   interface Task {
     id: string
-    value: string
+    name: string
   }
 
   interface TasksFieldValues {
@@ -76,10 +77,15 @@ const TaskManagementList: React.FC = () => {
 
   const defaultValues: TasksFieldValues = {
     tasks: [{
-      id: 'task',
-      value: ''
+      id: crypto.randomUUID(),
+      name: ''
     }]
   }
+
+  const tasksQuery = trpc.getCalendar.useQuery()
+  console.log(getQueryKey(trpc.getCalendar, undefined, 'query'))
+  const tasksMutation = trpc.updateTasks.useMutation()
+  const [isTasksSubmitting, setIsTasksSubmitting] = useState(false)
 
   const {
     handleSubmit,
@@ -90,77 +96,96 @@ const TaskManagementList: React.FC = () => {
 
   const [active, setActive] = useState<InputItemProps>()
 
-  const onSubmit = ({ tasks }: { tasks: Task[] } ) => {
+  useEffect(() => {
+    if (tasksQuery.data) {
+      const tasks = tasksQuery.data
+      if (tasks) reset({ tasks: tasks[dayjs().format('YYYY-MM-DD')] })
+    }
+  }, [tasksQuery.isFetching])
 
+  const onSubmit: SubmitHandler<typeof defaultValues> = async (values: { tasks: Task[] } ) => {
+    setIsTasksSubmitting(true)
+
+    const cleanedTasks = values.tasks
+      .filter(task => task.name !== '')
+
+    reset({ tasks: cleanedTasks })
+    await tasksMutation.mutateAsync({tasks: cleanedTasks})
+    setIsTasksSubmitting(false)
   }
 
-  return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-      <Controller
-        control={control}
-        name="tasks"
-        render={({
-          field: { onChange, value }
-        }) => (
-          <Container>
-            <DndContext
-              sensors={useSensors(
-                useSensor(PointerSensor)
-              )}
-              collisionDetection={closestCenter}
-              onDragStart={({ active }) => setActive(value.find(q => q.id === active.id))}
-              onDragEnd={({ active, over }) => {
-                setActive(undefined)
+  return (<>
+    {tasksQuery.isFetching ? <Spinner /> :
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <Controller
+          control={control}
+          name="tasks"
+          render={({
+            field: { onChange, value }
+          }) => (
+            <Container>
+              <DndContext
+                sensors={useSensors(
+                  useSensor(PointerSensor)
+                )}
+                collisionDetection={closestCenter}
+                onDragStart={({ active }) => setActive(value.find(q => q.id === active.id))}
+                onDragEnd={({ active, over }) => {
+                  setActive(undefined)
 
-                if (!over || active.id === over.id) return
-                const oldIndex = value.findIndex(({ id }) => id === active.id)
-                const newIndex = value.findIndex(({ id }) => id === over.id)
-                const newArray = arrayMove(value, oldIndex, newIndex)
+                  if (!over || active.id === over.id) return
+                  const oldIndex = value.findIndex(({ id }) => id === active.id)
+                  const newIndex = value.findIndex(({ id }) => id === over.id)
+                  const newArray = arrayMove(value, oldIndex, newIndex)
 
-                onChange(newArray)
-              }}
-            >
-              <SortableContext
-                items={value.map(c => c.id)}
-                strategy={verticalListSortingStrategy}
-              >
-                <List>
-                  <div>
-                    {useMemo(() => value.map((item, i) => <Fragment key={item.id ?? i}>
-                      <Sortable
-                        {...item}
-                        onChange={v => onChange(value.map(q => q.id === item.id ? { ...q, value: v } : q))}
-                        onRemove={() => onChange(value.filter(q => q.id !== item.id))}
-                        style={active?.id === item.id ? { opacity: 0 } : undefined}
-                      />
-                    </Fragment>), [value, active?.id])}
-                  </div>
-                </List>
-              </SortableContext>
-              {createPortal(<DragOverlay zIndex={5000}>{active && <InputItem {...active} active />}</DragOverlay>, document.body)}
-            </DndContext>
-
-            <ButtonContainer>
-              <Button
-                onClick={() => {
-                  // TODO SETUP MAXIMUM
-                  onChange([...value, { id: crypto.randomUUID(), value: ''}])
+                  onChange(newArray)
                 }}
-                surface
               >
-                Add Task
-              </Button>
-              <Button
-                surface
-                disabled={!isDirty}
-              >
-                Save Changes
-              </Button>
-            </ButtonContainer>
-          </Container>
-        )}
-      />
-    </form>
+                <SortableContext
+                  items={value.map(c => c.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <List>
+                    <div>
+                      {useMemo(() => value.map((item, i) => <Fragment key={item.id ?? i}>
+                        <Sortable
+                          {...item}
+                          onChange={v => onChange(value.map(q => q.id === item.id ? { ...q, name: v } : q))}
+                          onRemove={() => onChange(value.filter(q => q.id !== item.id))}
+                          style={active?.id === item.id ? { opacity: 0 } : undefined}
+                        />
+                      </Fragment>), [value, active?.id])}
+                    </div>
+                  </List>
+                </SortableContext>
+                {createPortal(<DragOverlay zIndex={5000}>{active && <InputItem {...active} active />}</DragOverlay>, document.body)}
+              </DndContext>
+
+              <ButtonContainer>
+                <Button
+                  onClick={() => {
+                    // TODO SETUP MAXIMUM
+                    onChange([...value, { id: crypto.randomUUID(), name: ''}])
+                  }}
+                  surface
+                  disabled={isTasksSubmitting || value.length > 10}
+                  type="button"
+                >
+              Add Task
+                </Button>
+                <Button
+                  surface
+                  disabled={!isDirty || isTasksSubmitting}
+                >
+              Save Changes
+                </Button>
+              </ButtonContainer>
+            </Container>
+          )}
+        />
+      </form>
+    }
+  </>
   )
 }
 

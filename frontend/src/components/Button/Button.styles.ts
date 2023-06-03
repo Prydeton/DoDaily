@@ -2,13 +2,20 @@ import { forwardRef } from 'react'
 import { styled } from 'goober'
 
 export const StyledButton = styled('button', forwardRef)`
-  border-radius: 5px;
-  background: transparent;
+  padding: .6em 1.5em;
+  margin: 0;
   border: none;
+  background: transparent;
   color: var(--white);
-  display: grid;
-  place-items: center;
-
+  border-radius: 5px;
+  cursor: pointer;
+  user-select: none;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  
   &[data-surface='true'] {
     background: var(--surface);
   }

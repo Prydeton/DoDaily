@@ -1,12 +1,20 @@
-import { Input } from './TextInput.styles'
+import React, { forwardRef } from 'react'
+import { FieldError } from 'react-hook-form'
 
-export interface TextInputProps {
-  value?: string
-  onChange: React.ComponentProps<'input'>['onChange']
+import { Container, Input, Label } from './TextInput.styles'
+export interface TextInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  label?: string
 }
 
-const TextInput: React.FC<TextInputProps> = ({ value, onChange }: TextInputProps) => {
-  return <Input onChange={onChange} value={value} />
+const TextInput = forwardRef<HTMLInputElement, TextInputProps>(({
+  label,
+  ...props
+}, ref) => {
+  return <Container>
+    {label && <Label>{label}</Label>}
+    <Input type="text" id={props.name} ref={ref} {...props} />
+  </Container>
 }
+)
 
 export default TextInput

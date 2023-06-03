@@ -13,3 +13,13 @@ export const Input = styled('input', forwardRef)`
   outline: none;
   border: none;
 `
+
+export const Label = styled('label')`
+  display: block;
+`
+
+export const Container = styled('div')`
+  display: flex;
+  flex-direction: column;
+  gap: .5em;
+`

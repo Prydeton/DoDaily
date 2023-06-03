@@ -27,6 +27,11 @@ export const ControlButton = styled('button')`
   align-items: center;
   justify-content: center;
   padding: 0;
+
+  ${props => props.disabled && `
+    opacity: .5;
+    cursor: default;
+  `};
 `
 
 export const ControlMonth = styled('h2')`
@@ -36,10 +41,14 @@ export const ControlMonth = styled('h2')`
 
 export const MonthContainer = styled('div')`
   width: 100%;
-  padding: 20px;
+  height: 100%;
   box-sizing: border-box;
+`
+
+export const Days = styled('div')`
   display: grid;
   grid-template-columns: repeat(auto-fill, 71px);
   justify-content: space-between;
   gap: 1em;
+  padding: 20px;
 `
