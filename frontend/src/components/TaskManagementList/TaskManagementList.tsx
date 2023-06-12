@@ -4,14 +4,17 @@ import { Controller, SubmitHandler, useForm } from 'react-hook-form'
 import { closestCenter, DndContext, DragOverlay, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
 import { arrayMove, SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
+import { useQueryClient } from '@tanstack/react-query'
 import { getQueryKey } from '@trpc/react-query'
 import dayjs from 'dayjs'
 import { Trash2 } from 'lucide-react'
 
 import { Button, DragHandle, Spinner } from '/src/components/'
 import { trpc } from '/src/libs'
+import { useAuthStore } from '/src/Stores'
 
 import { ButtonContainer, Container, List, Row } from './TaskManagementList.styles'
+import { Calendar, Task as TaskType } from '/../backend/src/router'
 import TextInput from '../TextInput/TextInput'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -82,9 +85,44 @@ const TaskManagementList: React.FC = () => {
     }]
   }
 
+  const queryClient = useQueryClient()
   const tasksQuery = trpc.getCalendar.useQuery()
-  console.log(getQueryKey(trpc.getCalendar, undefined, 'query'))
-  const tasksMutation = trpc.updateTasks.useMutation()
+  const { session } = useAuthStore()
+
+  const tasksMutation = trpc.updateTasks.useMutation({
+    onMutate: async ({ tasks }) => {
+      const calendarQueryKey = getQueryKey(trpc.getCalendar, undefined, 'query')
+
+      await queryClient.cancelQueries(calendarQueryKey)
+
+      const previousCalendar = queryClient.getQueryData<Calendar>(calendarQueryKey)
+
+      if (previousCalendar) {
+        console.log({previousCalendar})
+        const cachedDay = previousCalendar[dayjs().format('YYYY-MM-DD')]
+        console.log({cachedDay})
+        const newDay: Task[] = tasks.reduce((acc: TaskType[], curr: Task, index: number) => {
+          console.log({curr})
+          const cachedTaskIndex = cachedDay.findIndex(newTask => newTask.id === curr.id)
+          const cachedTask = cachedDay[cachedTaskIndex]
+          if (cachedTask) {
+            acc.push({ ...cachedTask, name: curr.name, order: index })
+          } else {
+            acc.push({ ...curr, order: index, date: dayjs().format('YYYY-MM-DD'), isComplete: false, userId: session!.user.id })
+          }
+          return acc
+        }, [])
+        console.log({newDay})
+        queryClient.setQueryData(calendarQueryKey, {
+          ...previousCalendar, [dayjs().format('YYYY-MM-DD')]: newDay
+        })
+      }
+
+      const  updatedCalendar = queryClient.getQueryData<Calendar>(calendarQueryKey)
+      console.log({updatedCalendar})
+    }
+  })
+
   const [isTasksSubmitting, setIsTasksSubmitting] = useState(false)
 
   const {

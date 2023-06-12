@@ -13,27 +13,35 @@ export interface Database {
         Row: {
           date: string
           id: string
-          is_complete: boolean | null
-          name: string | null
-          order: number | null
-          user_id: string | null
+          isComplete: boolean
+          name: string
+          order: number
+          userId: string
         }
         Insert: {
           date: string
           id?: string
-          is_complete?: boolean | null
-          name?: string | null
-          order?: number | null
-          user_id?: string | null
+          isComplete?: boolean
+          name: string
+          order: number
+          userId: string
         }
         Update: {
           date?: string
           id?: string
-          is_complete?: boolean | null
-          name?: string | null
-          order?: number | null
-          user_id?: string | null
+          isComplete?: boolean
+          name?: string
+          order?: number
+          userId?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: 'task_userId_fkey'
+            columns: ['userId']
+            referencedRelation: 'users'
+            referencedColumns: ['id']
+          }
+        ]
       }
     }
     Views: {
@@ -47,10 +55,10 @@ export interface Database {
         Returns: {
           date: string
           id: string
-          is_complete: boolean | null
-          name: string | null
-          order: number | null
-          user_id: string | null
+          isComplete: boolean
+          name: string
+          order: number
+          userId: string
         }[]
       }
     }

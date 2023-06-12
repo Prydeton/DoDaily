@@ -10,7 +10,7 @@ export const env = createEnv({
     NODE_ENV: z.enum(['development', 'production']).default('development'),
     PORT: z.coerce.number().default(3001),
     DATABASE_URL: z.string().url().min(1),
-    SUPABASE_URL: z.string().min(1).url(),
+    SUPABASE_URL: z.string().url().min(1),
     SUPABASE_PUBLIC_KEY: z.string().min(1),
   },
   client: {},

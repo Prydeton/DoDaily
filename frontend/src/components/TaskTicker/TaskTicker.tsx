@@ -1,50 +1,44 @@
 import React from 'react'
-import { SubmitHandler, useForm } from 'react-hook-form'
 import { useQueryClient } from '@tanstack/react-query'
 import { getQueryKey } from '@trpc/react-query'
+import { Check } from 'lucide-react'
 
 import { trpc } from '/src/libs'
 
-import { Label, TickButton, TickerForm } from './TaskTicker.styles'
-import { Task } from '/../backend/src/router'
+import { Container, Label, TickButton } from './TaskTicker.styles'
+import { Calendar, Task } from '/../backend/src/router'
 
 interface TaskTickerProps {
   task: Task
 }
 
-const TaskTicker: React.FC<TaskTickerProps> = ({ task: { id, name, order, date, is_complete } }) => {
+const TaskTicker: React.FC<TaskTickerProps> = ({ task: { id, name, order, date, isComplete } }) => {
   const queryClient = useQueryClient()
   const taskMutation = trpc.updateTaskComplete.useMutation({
-    onMutate: task => {
-      console.log({'Before': queryClient.getQueryData(getQueryKey(trpc.getCalendar, undefined, 'query'))})
-      queryClient.setQueryData(getQueryKey(trpc.getCalendar, undefined, 'query'), old => ({
-        ...old, [date]: [...old[date].filter(etask => etask.id !== task.taskId), ...[{...task, id: task.taskId}] ]
-        // .map(etask => etask.id === task.taskId ? ({...etask, is_complete: task?.isComplete}) : etask )
-      })
-      )
-      console.log({'After': queryClient.getQueryData(getQueryKey(trpc.getCalendar, undefined, 'query'))})
-      console.log({'what I want in query data': task})
+    onMutate: async task => {
+      const calendarQueryKey = getQueryKey(trpc.getCalendar, undefined, 'query')
+
+      await queryClient.cancelQueries(calendarQueryKey)
+
+      const previousCalendar = queryClient.getQueryData<Calendar>(calendarQueryKey)
+
+      if (previousCalendar)
+        queryClient.setQueryData(calendarQueryKey, {
+          ...previousCalendar, [date]: [...previousCalendar[date].filter(etask => etask.id !== task.id), ...[task] ]
+        })
     }
   })
 
-  const {
-    handleSubmit,
-    reset,
-    control,
-    formState: { isDirty },
-  } = useForm()
-
-  const onSubmit: SubmitHandler = async values => {
-    const task = await taskMutation.mutateAsync({ taskId: id, name, order, date, isComplete: !is_complete })
+  const toggleComplete = async () => {
+    taskMutation.mutateAsync({ id, name, order, date, isComplete: !isComplete })
   }
 
-  return <TickerForm onSubmit={handleSubmit(onSubmit)}>
-    <Label>{is_complete ? 'true' : 'false'}</Label>
+  return <Container>
     <Label>{name}</Label>
-    <Label>{id}</Label>
-    <Label>{date}</Label>
-    <TickButton></TickButton>
-  </TickerForm>
+    <TickButton onClick={() => toggleComplete()} className={isComplete ? 'complete' : 'not_complete'}>
+      <Check />
+    </TickButton>
+  </Container>
 }
 
 export default TaskTicker

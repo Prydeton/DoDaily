@@ -12,7 +12,7 @@ interface DayGlobeProps {
 const DayGlobe: React.FC<DayGlobeProps> = ({ setOpenedDate, tasks, date }: DayGlobeProps) => {
   return (
     <Container onClick={() => setOpenedDate(date)}>
-
+      {date}
     </Container>
   )
 }

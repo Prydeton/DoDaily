@@ -1,6 +1,5 @@
 import { randomUUID } from 'crypto'
 import dayjs from 'dayjs'
-import { emitWarning } from 'process'
 import { z } from 'zod'
 
 import supabase from './libs/supabase'
@@ -15,13 +14,13 @@ export const appRouter = router({
       const { data: tasks } = await supabase
         .from('task')
         .select('*')
-        .eq('user_id', ctx.user.id)
+        .eq('userId', ctx.user.id)
         .order('date')
 
       if (!tasks) return
 
       if (tasks.length === 0)
-        return { [dayjs().format('YYYY-MM-DD')]: [{ id: randomUUID(), name: '', date: dayjs().format('YYYY-MM-DD'), is_complete: false, order: 0, user_id: ctx.user.id } ] }
+        return { [dayjs().format('YYYY-MM-DD')]: [{ id: randomUUID(), name: '', date: dayjs().format('YYYY-MM-DD'), isComplete: false, order: 0, userId: ctx.user.id } ] }
 
       const calendar = tasks.reduce((cal, task) => {
         return {...cal, [task.date]: [...cal[task.date] ?? [], task]}
@@ -29,11 +28,13 @@ export const appRouter = router({
 
       const dates = getDatesBetween(dayjs(tasks[0].date), dayjs())
       let previousFilledDayTasks = [] as typeof tasks
+
+      // map
       dates.forEach(date => {
         if (calendar[date]) {
           previousFilledDayTasks = calendar[date]
         } else {
-          calendar[date] = previousFilledDayTasks.map(task => ({ ...task, is_complete: false, date, id: randomUUID() }))
+          calendar[date] = previousFilledDayTasks.map(task => ({ ...task, isComplete: false, date, id: randomUUID() }))
         }
       })
       return calendar
@@ -51,31 +52,32 @@ export const appRouter = router({
       const { error: deleteError } = await supabase
         .from('task')
         .delete()
-        .eq('user_id', ctx.user.id)
-        .eq('date', dayjs().startOf('day').toISOString())
+        .eq('userId', ctx.user.id)
+        .eq('date', dayjs().toISOString())
         .not('id', 'in', `(${tasks.map(task => task.id).join(',')})`)
 
       const { error: createError } = await supabase
         .from('task')
-        .upsert(tasks.map((task, i) => ({ ...task, user_id: ctx.user.id, date: dayjs().startOf('day').toISOString(), order: i })))
+        .upsert(tasks.map((task, i) => ({ ...task, userId: ctx.user.id, date: dayjs().toISOString(), order: i })))
 
       console.log({deleteError, createError})
     }),
+  // remove fields
   updateTaskComplete: authenticatedProcedure
     .input(z.object({
-      taskId: z.string().min(1),
+      id: z.string().min(1),
       name: z.string().min(1),
       isComplete: z.boolean(),
       order: z.number(),
       date: z.string()
     }))
-    .mutation(async ({ ctx, input: { taskId, name, order, date, isComplete } }): Promise<Task | undefined> => {
-      console.log('test')
+    .mutation(async ({ ctx, input: { id, name, order, date, isComplete } }): Promise<Task | undefined> => {
+
       const { error, data } = await supabase
         .from('task')
-        .upsert({ id: taskId, name, order, is_complete: isComplete, date, user_id: ctx.user.id })
+        .upsert({ id, name, order, isComplete, date, userId: ctx.user.id })
         .select()
-      console.log({data})
+
       if (data)
         return data[0]
     }),

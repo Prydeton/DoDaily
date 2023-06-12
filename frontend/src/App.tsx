@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { httpBatchLink } from '@trpc/client'
 
@@ -9,10 +9,7 @@ import { Auth, Calendar, Settings } from './pages'
 import { useAuthStore } from './Stores'
 
 const App: React.FC = () => {
-  const {
-    session,
-    getAuthHeader
-  } = useAuthStore()
+  const { session } = useAuthStore()
 
   const [queryClient] = useState(() => new QueryClient({
     defaultOptions: {
@@ -20,40 +17,38 @@ const App: React.FC = () => {
         refetchOnWindowFocus: false
       }
     }}))
-  const [trpcClient] = useState(() =>
+
+  const trpcClient = useMemo(() =>
     trpc.createClient({
       links: [
         httpBatchLink({
           url: 'http://localhost:3001/trpc',
-          headers() {
-            return {
-              Authorization: getAuthHeader(),
-            }
-          }
+          ...(session ? {
+            headers() {
+              return {
+                Authorization: `Bearer ${session.access_token}`
+              }}}
+            : {}
+          )
         }),
       ],
-
-    }),
-  )
+    }), [session])
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
 
-  return (
+  return (session ?
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
       <QueryClientProvider client={queryClient}>
-        {session ? (<>
-          <Header isSettingsOpen={isSettingsOpen} setIsSettingsOpen={setIsSettingsOpen} />
-          <PageContainer>
-            <Calendar />
-            <Settings isOpen={isSettingsOpen} />
-          </PageContainer>
-        </>) : (
-          <Auth />
-        )}
+        <Header isSettingsOpen={isSettingsOpen} setIsSettingsOpen={setIsSettingsOpen} />
+        <PageContainer>
+          <Calendar />
+          <Settings isOpen={isSettingsOpen} />
+        </PageContainer>
       </QueryClientProvider>
     </trpc.Provider>
+    : (
+      <Auth />
+    )
   )
-
 }
-
 export default App

@@ -14,7 +14,7 @@ export const createContext = async ({ req, res }: trpcExpress.CreateExpressConte
     }
     return null
   }
-
+  console.log({headers: req.headers})
   const user = await getUserFromHeader()
 
   return { user }

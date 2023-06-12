@@ -3,7 +3,8 @@
   --background-extra-dark: #1e2124;
   --background-light: #36393E;
   --surface: #383A40;
-  --white: #F2F3F5
+  --white: #F2F3F5;
+  --shadow: #1e212480;
 }
 
 html {
