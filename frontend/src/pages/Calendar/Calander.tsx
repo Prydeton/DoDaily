@@ -45,6 +45,7 @@ const Calender: React.FC = () => {
         </ControlButton>
 
         <ControlButton
+          disabled={firstMonth.isSame(currentMonth)}
           onClick={() => setCurrentMonth(currentMonth.subtract(1, 'month'))}>
           <ChevronLeft />
         </ControlButton>
@@ -52,6 +53,7 @@ const Calender: React.FC = () => {
         <ControlMonth>{currentMonth.format('MMMM')}</ControlMonth>
 
         <ControlButton
+          disabled={lastMonth.isSame(currentMonth)}
           onClick={() => setCurrentMonth(currentMonth.add(1, 'month'))}>
           <ChevronRight />
         </ControlButton>

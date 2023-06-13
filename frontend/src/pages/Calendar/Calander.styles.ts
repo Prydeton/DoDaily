@@ -9,6 +9,8 @@ export const PageContainer = styled('div')`
 
 export const ControlsContainer = styled('div')`
   width: 100%;
+  width: 380px;
+  margin: auto;
   box-sizing: border-box;
   padding: 10px 20px;
   display: flex;
@@ -37,6 +39,9 @@ export const ControlButton = styled('button')`
 export const ControlMonth = styled('h2')`
   padding: 0;
   margin: 0;
+  min-width: 111px;
+  display: grid;
+  place-content: center;
 `
 
 export const MonthContainer = styled('div')`
